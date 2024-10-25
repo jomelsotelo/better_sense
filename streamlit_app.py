@@ -46,7 +46,7 @@ def audio_callback(indata, frames, time, status):
     right_amplitude_db = 20 * np.log10(np.mean(np.abs(right_channel)) + 1e-6)
 
     # Set threshold to -10 dB
-    threshold_db = -30
+    threshold_db = -40
 
     # Determine if each channel exceeds the threshold
     left_activity = left_amplitude_db > threshold_db
