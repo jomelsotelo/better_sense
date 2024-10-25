@@ -2,3 +2,8 @@ streamlit
 numpy
 scipy
 sounddevice
+pyaudio
+tensorflow
+io
+csv
+customtkinter

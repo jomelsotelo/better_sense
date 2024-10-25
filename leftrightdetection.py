@@ -22,20 +22,32 @@ def audio_callback(indata, frames, time, status):
     left_channel = indata[:, 0]  # Left channel data
     right_channel = indata[:, 1]  # Right channel data
 
-    # Compute Time Difference of Arrival (TDOA) using cross-correlation
-    correlation = correlate(left_channel, right_channel, mode="full")
-    time_diff = np.argmax(correlation) - len(left_channel)
+    # Compute amplitude in dB for each channel
+    left_amplitude_db = 20 * np.log10(np.mean(np.abs(left_channel)) + 1e-6)  # Adding small value to avoid log(0)
+    right_amplitude_db = 20 * np.log10(np.mean(np.abs(right_channel)) + 1e-6)
 
-    # Compute amplitude difference
-    amplitude_diff = np.mean(np.abs(left_channel)) - np.mean(np.abs(right_channel))
+    # Set threshold to -10 dB
+    threshold_db = -20
 
-    # Determine sound direction based on TDOA and amplitude differences
-    if time_diff > 0 and amplitude_diff > 0:
-        print("Sound is coming from the left")
-    elif time_diff < 0 and amplitude_diff < 0:
-        print("Sound is coming from the right")
-    else:
-        print("Sound direction is unclear")
+    # Determine if each channel exceeds the threshold
+    left_activity = left_amplitude_db > threshold_db
+    right_activity = right_amplitude_db > threshold_db
+
+    # Determine sound direction based on dB threshold and TDOA
+    if left_activity or right_activity:
+        # Compute Time Difference of Arrival (TDOA) using cross-correlation
+        correlation = correlate(left_channel, right_channel, mode="full")
+        time_diff = np.argmax(correlation) - len(left_channel)
+
+        # Compute amplitude difference
+        amplitude_diff = np.mean(np.abs(left_channel)) - np.mean(np.abs(right_channel))
+
+        # Print the sound direction if above threshold
+        if left_activity and time_diff > 0 and amplitude_diff > 0:
+            print("Sound is coming from the left")
+        elif right_activity and time_diff < 0 and amplitude_diff < 0:
+            print("Sound is coming from the right")
+        
 
 # Set up the input stream with the chosen device
 try:
